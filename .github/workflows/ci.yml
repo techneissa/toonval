@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-24.04-arm is arm64 like the Raspberry Pi 5.
+        os: [macos-latest, ubuntu-24.04-arm, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Linux packages
+        if: runner.os == 'Linux'
+        # ALSA for MIDI, and the DRM/GBM/EGL/GLES stack SDL3 uses on the Pi without a desktop.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build libasound2-dev libudev-dev \
+            libdrm-dev libgbm-dev libegl-dev libgles-dev \
+            libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev \
+            libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev wayland-protocols \
+            libdecor-0-dev
+
+      - name: Install macOS packages
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DTOONVAL_PIANO_FROM_SOURCE=OFF
+
+      - name: Build
+        run: cmake --build build -- -k 0
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

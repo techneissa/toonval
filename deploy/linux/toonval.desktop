@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=toonval
+Comment=Falling-note piano trainer
+Exec=/opt/toonval/bin/toonval
+Icon=toonval
+Terminal=false
+Categories=AudioVideo;Audio;Music;Education;

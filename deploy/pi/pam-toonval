@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# PAM stack for toonval.service and toonval-labwc.service (PAMName=toonval).
+# Installed to /etc/pam.d/toonval by deploy/pi/setup.sh. Gives the service a logind session.
+# Adapted from the cage wiki. UNTESTED on a Pi.
+auth     required pam_permit.so
+account  required pam_permit.so
+session  required pam_unix.so
+session  required pam_env.so readenv=1 user_readenv=0
+session  required pam_systemd.so

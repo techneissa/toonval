@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# toonval on the console with SDL3's KMSDRM backend: no compositor, the app owns the screens.
+# Adapted from the cage wiki's boot unit. UNTESTED on a Pi; see deploy/pi/CHECKLIST.md.
+# Installed to /etc/systemd/system/toonval.service by deploy/pi/setup.sh.
+# Use this OR toonval-labwc.service, not both (they conflict).
+[Unit]
+Description=toonval (KMSDRM, no compositor)
+After=systemd-user-sessions.service systemd-logind.service
+After=getty@tty1.service sound.target
+Wants=systemd-logind.service
+# The app takes over tty1 from the login prompt.
+Conflicts=getty@tty1.service toonval-labwc.service
+ConditionPathExists=/dev/tty0
+
+[Service]
+Type=simple
+User=toonval
+# setup.sh adds the user to these. A group missing on your image makes the unit fail to start:
+# remove it here.
+SupplementaryGroups=video render input audio
+Environment=SDL_VIDEO_DRIVER=kmsdrm
+# Hypothesis to test: the GLES renderer is picked on its own under KMSDRM. Force it if it is not.
+#Environment=SDL_RENDER_DRIVER=opengles2
+ExecStart=/opt/toonval/bin/toonval
+# Switch to the VT the app runs on. The leading "-+" ignores a failure and runs as root.
+ExecStartPost=-+/usr/bin/chvt 1
+Restart=on-failure
+RestartSec=3
+# Keep retrying forever; a kiosk with a dead app is worse than a restart loop in the journal.
+StartLimitIntervalSec=0
+
+# A logind session on tty1 is what grants DRM and input access without root (hypothesis).
+PAMName=toonval
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+UtmpIdentifier=tty1
+UtmpMode=user
+
+[Install]
+WantedBy=multi-user.target

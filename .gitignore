@@ -1,0 +1,6 @@
+/build/
+/build-release/
+/build-asan/
+/.cache/
+.DS_Store
+

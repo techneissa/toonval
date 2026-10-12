@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# toonval inside a labwc kiosk session: the fallback if KMSDRM cannot drive two screens.
+# UNTESTED on a Pi; see deploy/pi/CHECKLIST.md.
+# Installed to /etc/systemd/system/toonval-labwc.service by deploy/pi/setup.sh.
+# Use this OR toonval.service, not both (they conflict).
+[Unit]
+Description=toonval (labwc kiosk)
+After=systemd-user-sessions.service systemd-logind.service
+After=getty@tty1.service sound.target
+Wants=systemd-logind.service
+Conflicts=getty@tty1.service toonval.service
+ConditionPathExists=/dev/tty0
+
+[Service]
+Type=simple
+User=toonval
+SupplementaryGroups=video render input audio
+Environment=LIBSEAT_BACKEND=logind
+Environment=SDL_VIDEO_DRIVER=wayland
+# -S runs the app as the session: labwc exits when the app does, and Restart= brings both back.
+# Check `labwc --help` on your version. If -S is missing, use -s and expect labwc to stay up
+# (a black screen) after an app crash.
+ExecStart=/usr/bin/labwc -S /opt/toonval/bin/toonval
+ExecStartPost=-+/usr/bin/chvt 1
+Restart=on-failure
+RestartSec=3
+StartLimitIntervalSec=0
+
+PAMName=toonval
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+UtmpIdentifier=tty1
+UtmpMode=user
+
+[Install]
+WantedBy=multi-user.target

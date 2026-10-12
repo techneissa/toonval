@@ -1,0 +1,62 @@
+# Music logic with no SDL, MIDI, or audio dependencies, so it builds and tests anywhere.
+add_library(toonval_core
+  src/chord.cpp
+  src/chord_display.cpp
+  src/color.cpp
+  src/computer_keyboard.cpp
+  src/content_hash.cpp
+  src/ear_training.cpp
+  src/effects_governor.cpp
+  src/evaluator.cpp
+  src/expected_note.cpp
+  src/exercises.cpp
+  src/grade_words.cpp
+  src/hand_path.cpp
+  src/hand_split.cpp
+  src/key_state.cpp
+  src/keyboard.cpp
+  src/keyboard_identity.cpp
+  src/keyboard_view.cpp
+  src/latency_stats.cpp
+  src/library.cpp
+  src/look.cpp
+  src/look_serialize.cpp
+  src/midi_event.cpp
+  src/midi_file.cpp
+  src/midi_writer.cpp
+  src/mscx.cpp
+  src/musicxml.cpp
+  src/note_style.cpp
+  src/note_trail.cpp
+  src/note_window.cpp
+  src/octave_shift.cpp
+  src/pitch.cpp
+  src/pitch_detect.cpp
+  src/pitch_dsp.cpp
+  src/pitch_eval.cpp
+  src/pitch_synth.cpp
+  src/playback.cpp
+  src/pointer_keys.cpp
+  src/practice_plan.cpp
+  src/progress.cpp
+  src/recorder.cpp
+  src/run_record.cpp
+  src/scales.cpp
+  src/score_raw.cpp
+  src/score_zip.cpp
+  src/screen_layout.cpp
+  src/section_suggestions.cpp
+  src/sections.cpp
+  src/sections_store.cpp
+  src/session_restore.cpp
+  src/session_state.cpp
+  src/settings_doc.cpp
+  src/song.cpp
+  src/song_builder.cpp
+  src/sound_sink.cpp
+  src/transport.cpp
+  src/transpose.cpp)
+add_library(toonval::core ALIAS toonval_core)
+target_include_directories(toonval_core PUBLIC include)
+target_link_libraries(toonval_core PRIVATE toonval_warnings toonval_pugixml toonval_miniz
+  toonval_kissfft)

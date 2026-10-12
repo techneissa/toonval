@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.25)
+project(toonval VERSION 0.1.0 LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(TOONVAL_BUILD_APP "Build the SDL3 app" ON)
+option(TOONVAL_BUILD_TOOLS "Build developer tools" ON)
+option(TOONVAL_BUILD_TESTS "Build unit tests" ON)
+
+# Warnings for our own targets only, not for fetched dependencies.
+add_library(toonval_warnings INTERFACE)
+if(MSVC)
+  target_compile_options(toonval_warnings INTERFACE /W4)
+else()
+  target_compile_options(toonval_warnings INTERFACE -Wall -Wextra -Wpedantic -Wshadow -Wconversion)
+endif()
+
+include(cmake/Dependencies.cmake)
+
+add_subdirectory(core)
+if(TOONVAL_BUILD_APP OR TOONVAL_BUILD_TESTS)
+  include(cmake/PianoAsset.cmake)
+  include(cmake/Synth.cmake)
+endif()
+if(TOONVAL_BUILD_APP)
+  add_subdirectory(app)
+endif()
+if(TOONVAL_BUILD_TOOLS)
+  add_subdirectory(tools)
+endif()
+if(TOONVAL_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
